@@ -267,7 +267,8 @@ func (vm *jsVM) Run(js string) (string, error) {
 	v.js = js
 	v.wg.Add(1)
 	vm.ch <- v
-	return v.String(), v.Error()
+	v.wg.Wait()
+	return v.ret, v.err
 }
 
 type jsValue struct {
@@ -276,16 +277,6 @@ type jsValue struct {
 	wg  sync.WaitGroup
 	ret string
 	err error
-}
-
-func (v *jsValue) Error() error {
-	v.wg.Wait()
-	return v.err
-}
-
-func (v *jsValue) String() string {
-	v.wg.Wait()
-	return v.ret
 }
 
 const jsRuntime = `
