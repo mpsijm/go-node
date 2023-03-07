@@ -32,15 +32,7 @@ func (err ErrThrown) Error() string {
 
 // VM is a Javascript Virtual Machine running on Node.js
 type VM interface {
-	Run(javascript string) Value
-}
-
-// Value is the returned from Run().
-type Value interface {
-	// Error returns an error, if any.
-	Error() error
-	// String returns the string representation of the Value.
-	String() string
+	Run(javascript string) (string, error)
 }
 
 // Options for VM
@@ -259,18 +251,9 @@ func New(opts *Options) VM {
 }
 
 type jsErrVM struct{ err error }
-type jsErrValue struct{ err error }
 
-func (vm jsErrVM) Run(js string) Value {
-	return jsErrValue{vm.err}
-}
-
-func (vm jsErrValue) Error() error {
-	return vm.err
-}
-
-func (vm jsErrValue) String() string {
-	return ""
+func (vm jsErrVM) Run(js string) (string, error) {
+	return "", vm.err
 }
 
 type jsVM struct {
@@ -278,13 +261,13 @@ type jsVM struct {
 }
 
 // Run some Javascript code. Returns the JSON or an error.
-func (vm *jsVM) Run(js string) Value {
+func (vm *jsVM) Run(js string) (string, error) {
 	v := new(jsValue)
 	v.vm = vm
 	v.js = js
 	v.wg.Add(1)
 	vm.ch <- v
-	return v
+	return v.String(), v.Error()
 }
 
 type jsValue struct {

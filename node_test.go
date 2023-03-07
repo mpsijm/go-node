@@ -23,29 +23,29 @@ func TestNode(t *testing.T) {
 	vm.Run("x=0")
 	N := 100
 	for i := 0; i < N; i++ {
-		val := vm.Run("++x")
-		if err := val.Error(); err != nil {
+		val, err := vm.Run("++x")
+		if err != nil {
 			t.Fatal(err)
 		}
-		if val.String() != fmt.Sprint(i+1) {
+		if val != fmt.Sprint(i+1) {
 			t.Fatalf("expected '%v', got '%v'", fmt.Sprint(i+1), val)
 		}
 	}
-	val := vm.Run("x")
-	if err := val.Error(); err != nil {
+	val, err := vm.Run("x")
+	if err != nil {
 		t.Fatal(err)
 	}
-	if val.String() != fmt.Sprint(N) {
+	if val != fmt.Sprint(N) {
 		t.Fatalf("expected '%v', got '%v'", fmt.Sprint(N), val)
 	}
 	vm.Run("emit(100)")
 	<-ch
 
-	v := vm.Run("throw new Error('hello')")
-	if v.Error() == nil {
+	_, e := vm.Run("throw new Error('hello')")
+	if e == nil {
 		t.Fatal("expected an error")
 	}
-	err, ok := v.Error().(ErrThrown)
+	err, ok := e.(ErrThrown)
 	if !ok {
 		t.Fatal("expected an ErrThrown")
 	}
